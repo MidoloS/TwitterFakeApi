@@ -1,24 +1,31 @@
 from flask import Flask, jsonify, request
 import mysql.connector
-import fakeData
 
 app = Flask(__name__)
 
 # Configuracion de MySQL
 mydb = mysql.connector.connect(
   host="localhost",
-  user="yourusername",
-  passwd="yourpassword"
+  user="root",
+  passwd=""
 )
 
 query = mydb.cursor()
 
-query.execute('CREATE DATABASE TwitterFakeApi')
+query.execute('CREATE DATABASE IF NOT EXISTS TwitterFakeApi')
+query.execute('USE TwitterFakeApi')
 
 @app.route('/api/v1/register', methods=['POST'])
 def register():
-    # Tomar request.json y guardar en MySQL
-    return request.json
+    # Tomar los valores de request.json y guardar en MySQL
+    first_name = request.json['first_name']
+    last_name = request.json['last_name']
+    email = request.json['email']
+    password = request.json['password']
+    print(first_name, last_name, email, password)
+    query.execute('INSERT INTO users (first_name, last_name, email, password) VALUES(%s, %s, %s, %s)',
+    (first_name, last_name, email, password))
+    return first_name
 
 @app.route('/api/v1/login', methods=['POST'])
 def login():
