@@ -84,22 +84,31 @@ def login():
 def getTwitts(token_data, user):
     twitts = Twitt('', user, '', datetime.datetime.utcnow())
     twitts = twitts.getTwitt(token_data, user)
-    print(twitts)
     if len(twitts) == 0:
         return jsonify({'message':'No content'}), 204
-    return jsonify({"twitts":{
-        'id':twitts[0][0],
-        'owner':twitts[0][1],
-        'message':twitts[0][2],
-        'creation_timestamp': twitts[0][3]
-    }})
+
+    res = []
+    i = 0
+    print(twitts[0])
+    for twitt in twitts:
+        print(twitt)
+        print('\n')
+        obj = {
+            'id':twitt[0],
+            'owner':twitt[1],
+            'message':twitt[2],
+            'creation_timestamp': twitt[3]
+        }
+        i += 1
+        res.append(obj)
+    return jsonify({"twitts":res})
 
 @app.route('/api/v1/<string:user>/tweets', methods=['POST'])
 @token_required
 def createTwitt(token_data, user):
     twitts = Twitt('', user, '', datetime.datetime.utcnow())
     twitts.createTwitt(token_data, user)
-    return request.json, 201
+    return '', 201
 
 @app.route('/api/v1/<string:user>/tweets/<string:id>', methods=['DELETE'])
 def delete(user, id):

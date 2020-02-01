@@ -72,6 +72,5 @@ class Twitt:
         return data
 
     def deleteTwitt(self):
-        print('ID: ' + self.id)
         query.execute("DELETE FROM twitts WHERE id = %s", (self.id,))
         mydb.commit()
