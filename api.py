@@ -4,6 +4,7 @@ import jwt
 import datetime
 from functools import wraps
 from models.model import User, Twitt
+from hashlib import md5
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'hOQxNq7kLkaoUb5B4dXd2t7r8DG9XVjL'
@@ -20,7 +21,6 @@ def token_required(f):
 
         try:
             data = jwt.decode(token, app.config['SECRET_KEY'])
-            print(data['username'])
         except:
             return jsonify({'message':'Session Expired'})
 
@@ -33,63 +33,77 @@ def token_required(f):
 
 @app.route('/api/v1/register', methods=['POST'])
 def register():
-    # Tomar los valores de request.json y guardar en MySQL
-    users = User('', '', '', '')
-    users = users.getUsers()
-
     if request:
+        users = User('', '', '', '')
+        users = users.getMails()
         for row in users:
-            if request.json['email'] == row[3]:
+            if request.json['email'] == row[0]:
                 return jsonify({'message':'This mail is already claimed'}), 400
 
         user = User('', '', '', '')
         user.createUser()
-        return request.json, 201
+        ids = user.getId(request.json['email'])
+        return jsonify({
+            'user_id': ids[0][0],
+            'email': request.json['email'],
+            'first_name': request.json['first_name'],
+            'last_name': request.json['last_name']
+        }), 201
     else:
         return jsonify({'message':'Data not found'}), 400
 
 @app.route('/api/v1/login', methods=['GET'])
 def login():
     users = User('', '', '', '')
-    users = users.getUsers()
+    users = users.getUserAndPass()
+
+    try:
+        request.json['password'] or request.json['email']
+    except:
+        return jsonify({'message':'Credentials not found'}), 400
     
-    
+
     for row in users:
-        # 1 Username
-        # 4 Password
-        print("\n")
-        if request and request.json['password'] == row[4] and request.json['email'] == row[3]:
+        if request and request.json['password'] == row[1] and request.json['email'] == row[0]:
             token = jwt.encode({
                 'email' : request.json['email'], 
-                'password' : request.json['password'], 
-                'exp' : datetime.datetime.utcnow() +
-                datetime.timedelta(minutes=30)
+                'password' : request.json['password'],
+                #'exp' : datetime.datetime.utcnow() + datetime.timedelta(days=9999)
                 }, app.config['SECRET_KEY'])
-
+                
             token = token.decode('utf-8')
 
             response = jsonify({'token':token})
             response.headers['x-access-token'] = token
             return response
-    return 'Login Failed'
+    return jsonify({'message':'Login error'}), 401
+    
 
 @app.route('/api/v1/<string:user>/tweets', methods=['GET'])
 @token_required
 def getTwitts(token_data, user):
     twitts = Twitt('', user, '', datetime.datetime.utcnow())
     twitts = twitts.getTwitt(token_data, user)
-    return jsonify({"twitts":twitts})
+    print(twitts)
+    if len(twitts) == 0:
+        return jsonify({'message':'No content'}), 204
+    return jsonify({"twitts":{
+        'id':twitts[0][0],
+        'owner':twitts[0][1],
+        'message':twitts[0][2],
+        'creation_timestamp': twitts[0][3]
+    }})
 
 @app.route('/api/v1/<string:user>/tweets', methods=['POST'])
 @token_required
 def createTwitt(token_data, user):
     twitts = Twitt('', user, '', datetime.datetime.utcnow())
-    twitts.createTwitt(token_data)
-    return request.json
+    twitts.createTwitt(token_data, user)
+    return request.json, 201
 
-@app.route('/api/v1/<string:user>/tweets/:id', methods=['DELETE'])
+@app.route('/api/v1/<string:user>/tweets/<string:id>', methods=['DELETE'])
 def delete(user, id):
-    twitt = Twitt(id, '', '', datetime.datetime.utcnow())
+    twitt = Twitt(id, '', '', '')
     twitt.deleteTwitt()
     return '', 200
 

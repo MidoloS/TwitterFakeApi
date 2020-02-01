@@ -26,14 +26,25 @@ class User:
         first_name = str(request.json['first_name'])
         last_name = str(request.json['last_name'])
         email = str(request.json['email'])
-        __password = str(request.json['password'])
-
+        password = str(request.json['password'])
+        
         # Consulta SQL
         query.execute("INSERT INTO users (first_name, last_name, email, password) VALUES(%s, %s, %s, %s)",
-        (first_name, last_name, email, __password))
+        (first_name, last_name, email, password))
         mydb.commit()
-    def getUsers(self):
-        query.execute("SELECT * FROM users")
+
+    def getUserAndPass(self):
+        query.execute("SELECT email, password FROM users")
+        data = query.fetchall()
+        return data
+
+    def getMails(self):
+        query.execute("SELECT email FROM users")
+        data = query.fetchall()
+        return data
+
+    def getId(self, email):
+        query.execute("SELECT user_id FROM users WHERE email=%s", (email,))
         data = query.fetchall()
         return data
 
@@ -44,10 +55,10 @@ class Twitt:
         self.message = message
         self.creation_timestamp = creation_timestamp
 
-    def createTwitt(self, token_data):
+    def createTwitt(self, token_data, user):
         # Cambio de valores del objeto
         message = str(request.json['message'])
-        owner_name = token_data['username']
+        owner_name = user
         creation_timestamp = datetime.datetime.utcnow()
 
         # Consulta SQL
