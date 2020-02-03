@@ -1,0 +1,12 @@
+CONSIDERACIONES:
+	* Si 2 usuarios tienen el mismo primer nombre arrojaria los twitts de ambos
+		-> Esto podria solucionarse utilizando username en vez de first_name, este funcionaria como un nombre unico e irrepetible
+
+	* 127.0.0.1:4000/api/v1/:user/tweets generare un Twitt a nombre de "user"
+		 * Yo sin tener acceso a la cuenta "spacex" podria ser capaz de publicar algo en su nombre *
+		-> Esto podria solucionarse con el ejemplo anterior, agregando el username al token y comparando el token con la url
+		-> Ocurre un fallo similar a la hora de borrar twitts, yo podria borrar twitts de cualquier cuenta sin tener acceso a la misma
+
+	* La contraseña no viaja encriptada, un ataque XSS podria permitirle a un atacante robar credenciales de inicio de sesion
+	
+	* Al introducir variables directamente en querys un atacante podria realizar inyecciones SQL.
