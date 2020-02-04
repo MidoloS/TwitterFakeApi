@@ -1,0 +1,16 @@
+CREATE DATABASE twitterfakeapi; 
+
+CREATE TABLE users (
+    user_id INT(6) AUTO_INCREMENT PRIMARY KEY,
+    first_name VARCHAR(20) NOT NULL,
+    last_name VARCHAR(20) NOT NULL,
+    email VARCHAR(60) NOT NULL,
+    password VARCHAR(20) NOT NULL
+);
+
+CREATE TABLE twitts (
+    id INT(6) AUTO_INCREMENT PRIMARY KEY,
+    owner_name VARCHAR(20) NOT NULL,
+    message VARCHAR(200) NOT NULL,
+    creation_timestamp DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
